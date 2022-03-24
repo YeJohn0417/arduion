@@ -6,7 +6,7 @@ char BTbuf[255];
 
 void setup() {
   Serial.begin(115200);  
-  SerialBT.begin("ESP32BT"); //Bluetooth device name
+  SerialBT.begin("fly elephant"); //Bluetooth device name
   Serial.println("The device started, now you can pair it with bluetooth!");
 }
 
