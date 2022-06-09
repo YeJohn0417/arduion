@@ -1,33 +1,20 @@
-/***********************************************************************
-  Adafruit MQTT Library ESP32 Adafruit IO SSL/TLS example
+// Adafruit MQTT Library ESP32 Adafruit IO SSL/TLS example
+// ESP32 + DHT11
 
-  Use the latest version of the ESP32 Arduino Core:
-    https://github.com/espressif/arduino-esp32
-
-  Works great with Adafruit Huzzah32 Feather and Breakout Board:
-    https://www.adafruit.com/product/3405
-    https://www.adafruit.com/products/4172
-
-  Adafruit invests time and resources providing this open source code,
-  please support Adafruit and open-source hardware by purchasing
-  products from Adafruit!
-
-  Written by Tony DiCola for Adafruit Industries.
-  Modified by Brent Rubell for Adafruit Industries
-  MIT license, all text above must be included in any redistribution
- **********************************************************************/
 #include <WiFi.h>
 #include "WiFiClientSecure.h"
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
+#include "DHT.h"
 
-/************************* WiFi Access Point *********************************/
+#define DHTTYPE DHT11   // DHT 11
+#define DHTPIN 23
+DHT dht(DHTPIN, DHTTYPE);
 
 #define WLAN_SSID "飛象"
 #define WLAN_PASS "35162557"
 
 /************************* Adafruit.io Setup *********************************/
-
 #define AIO_SERVER      "io.adafruit.com"
 
 // Using port 8883 for MQTTS
@@ -36,7 +23,7 @@
 // Adafruit IO Account Configuration
 // (to obtain these values, visit https://io.adafruit.com and click on Active Key)
 #define AIO_USERNAME "YeJohn"
-#define AIO_KEY      "aio_cuLH24JtfyzY1HuI8FsxJsWoqYKU"
+#define AIO_KEY      "aio_vydQ24RrRh7DD9w90rbewUyQG6jq"
 
 /************ Global State (you don't need to change this!) ******************/
 
@@ -75,13 +62,14 @@ const char* adafruitio_root_ca = \
 
 // Setup a feed called 'test' for publishing.
 // Notice MQTT paths for AIO follow the form: <username>/feeds/<feedname>
-Adafruit_MQTT_Publish test = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/test");
+Adafruit_MQTT_Publish humid = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/humidity");
+Adafruit_MQTT_Publish temp = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/temperature");
 
 /*************************** Sketch Code ************************************/
 
 void setup() {
   Serial.begin(115200);
-  delay(10);
+  dht.begin();
 
   Serial.println(F("Adafruit IO MQTTS (SSL/TLS) Example"));
 
@@ -108,26 +96,35 @@ void setup() {
   client.setCACert(adafruitio_root_ca);
 }
 
-uint32_t x=0;
-
 void loop() {
   // Ensure the connection to the MQTT server is alive (this will make the first
   // connection and automatically reconnect when disconnected).  See the MQTT_connect
   // function definition further below.
   MQTT_connect();
-
+  
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  
   // Now we can publish stuff!
-  Serial.print(F("\nSending val "));
-  Serial.print(x);
-  Serial.print(F(" to test feed..."));
-  if (! test.publish(x++)) {
+  Serial.print(F("\nSending Humidity = "));
+  Serial.print(h);
+  Serial.print("...");
+  if (! humid.publish(h)) {
     Serial.println(F("Failed"));
   } else {
     Serial.println(F("OK!"));
   }
-
+  
+  Serial.print(F("\nSending Temperature = "));
+  Serial.print(t);
+  Serial.print("...");
+  if (! temp.publish(t)) {
+    Serial.println(F("Failed"));
+  } else {
+    Serial.println(F("OK!"));
+  }
   // wait a couple seconds to avoid rate limit
-  delay(2000);
+  delay(5000);
 
 }
 
