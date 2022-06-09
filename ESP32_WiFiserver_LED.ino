@@ -24,7 +24,7 @@ String output26State = "off";
 String output27State = "off";
 
 // Assign output variables to GPIO pins
-const int output26 = 26;
+const int output26 = 2;
 const int output27 = 27;
 
 // Current time
@@ -125,17 +125,7 @@ void loop(){
             } else {
               client.println("<p><a href=\"/26/off\"><button class=\"button button2\">OFF</button></a></p>");
             } 
-               
-            // Display current state, and ON/OFF buttons for GPIO 27  
-            client.println("<p>GPIO 27 - State " + output27State + "</p>");
-            // If the output27State is off, it displays the ON button       
-            if (output27State=="off") {
-              client.println("<p><a href=\"/27/on\"><button class=\"button\">ON</button></a></p>");
-            } else {
-              client.println("<p><a href=\"/27/off\"><button class=\"button button2\">OFF</button></a></p>");
-            }
-            client.println("</body></html>");
-            
+           
             // The HTTP response ends with another blank line
             client.println();
             // Break out of the while loop
