@@ -99,7 +99,7 @@ void setup() {
   motor.motorStop(motorL);
     
   // Create the BLE Device
-  BLEDevice::init("fly elephant");
+  BLEDevice::init("ESP32-BRYSON");
 
   // Create the BLE Server
   pServer = BLEDevice::createServer();
@@ -128,5 +128,50 @@ void setup() {
   // Start advertising
   pServer->getAdvertising()->start();
   Serial.println("Waiting a client connection to notify...");
+
+}
+
+void loop() {
+  String tx;
+  int Speed = HALFSPEED;
+
+  // BLE disconnecting
+  if (!deviceConnected && oldDeviceConnected) {
+     delay(500); // give the bluetooth stack the chance to get things ready
+     pServer->startAdvertising(); // restart advertising
+     Serial.println("BLE start advertising");
+     oldDeviceConnected = deviceConnected;
+  }
+
+  // BLE connecting
+  if (deviceConnected && !oldDeviceConnected) {
+    // do stuff here on connecting
+    oldDeviceConnected = deviceConnected;
+    Serial.println("BLE device connected");
+  }
+
+  // check BLE command
+  if (BLE_RXflag) {
+    Serial.print(BLEcmd); Serial.print(" "); Serial.println(BLE_RXbuf);
+    
+    switch (BLEcmd) {
+      case 'F': forward(Speed);
+                break;
+      case 'B': backward(Speed);
+                break;
+      case 'R': right(Speed);           
+                break;
+      case 'L': left(Speed);
+                break;
+      case 'S': stop();
+                break;  
+      case 'P': 
+                  Serial.println(String(BLE_RXbuf)); 
+                  Speed = String(BLE_RXbuf+1).toInt();
+                  Serial.println(Speed);
+                  break;                
+    }
+    BLE_RXflag = false;
+  }
 
 }
